@@ -1,1 +1,7 @@
+- hosts: k8s_master
+  become: yes
+  tasks:
 
+  - name: Install Helm
+    shell: |
+      curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash

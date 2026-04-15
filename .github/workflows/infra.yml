@@ -1,0 +1,29 @@
+name: Infra Setup
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
+    - name: Terraform Init & Apply
+      run: |
+        cd terraform
+        terraform init
+        terraform apply -auto-approve
+
+    - name: Run Ansible
+      run: |
+        cd ansible
+        ansible-playbook -i inventory.ini install-k8s.yml
+        ansible-playbook -i inventory.ini master.yml
+        ansible-playbook -i inventory.ini worker.yml

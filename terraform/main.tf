@@ -2,11 +2,6 @@ provider "aws" {
   region = var.region
 }
 
-resource "aws_key_pair" "k8s_key" {
-  key_name   = var.key_name
-  public_key = file("${path.module}/my-key.pub")
-}
-
 # 🔍 Get latest Ubuntu AMI
 data "aws_ami" "ubuntu" {
   most_recent = true
@@ -17,6 +12,12 @@ data "aws_ami" "ubuntu" {
   }
 
   owners = ["099720109477"]
+}
+
+# 🔑 Upload Key Pair
+resource "aws_key_pair" "k8s_key" {
+  key_name   = var.key_name
+  public_key = file("${path.module}/my-key.pub")
 }
 
 # 🔐 Security Group
@@ -32,7 +33,7 @@ resource "aws_security_group" "k8s_sg" {
   }
 
   ingress {
-    description = "Kubernetes API"
+    description = "K8s API"
     from_port   = 6443
     to_port     = 6443
     protocol    = "tcp"
@@ -40,7 +41,7 @@ resource "aws_security_group" "k8s_sg" {
   }
 
   ingress {
-    description = "NodePort Range"
+    description = "NodePort"
     from_port   = 30000
     to_port     = 32767
     protocol    = "tcp"
@@ -48,7 +49,7 @@ resource "aws_security_group" "k8s_sg" {
   }
 
   ingress {
-    description = "All traffic within SG"
+    description = "Internal communication"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -67,7 +68,7 @@ resource "aws_security_group" "k8s_sg" {
 resource "aws_instance" "master" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
-  key_name = aws_key_pair.k8s_key.key_name
+  key_name                    = aws_key_pair.k8s_key.key_name
   associate_public_ip_address = true
 
   vpc_security_group_ids = [aws_security_group.k8s_sg.id]
@@ -82,7 +83,7 @@ resource "aws_instance" "worker" {
   count                       = var.worker_count
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
-  key_name                    = var.key_name
+  key_name                    = aws_key_pair.k8s_key.key_name
   associate_public_ip_address = true
 
   vpc_security_group_ids = [aws_security_group.k8s_sg.id]

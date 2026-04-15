@@ -1,7 +1,7 @@
-output "master_public_ip" {
+output "master_ip" {
   value = aws_instance.master.public_ip
 }
 
-output "worker_public_ips" {
+output "worker_ips" {
   value = aws_instance.worker[*].public_ip
 }

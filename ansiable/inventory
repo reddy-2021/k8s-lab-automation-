@@ -1,2 +1,8 @@
-
-
+[master]
+3.89.243.211
+[worker]
+34.224.22.33
+3.208.23.161
+[all:vars]
+ansible_user=ubunutu
+ansible_ssh_private_key_file=../terraform/my-key

@@ -1,0 +1,63 @@
+name: Ansible Configuration Only
+
+on:
+  workflow_dispatch:   # manual trigger
+
+jobs:
+  ansible:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 🔥 AWS credentials (needed for terraform output)
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1
+
+      # 🔥 Only INIT (no apply)
+      - name: Terraform Init (Read State Only)
+        run: |
+          cd terraform
+          terraform init
+
+      # 🔥 Get existing IPs from state
+      - name: Generate Inventory from Existing Infra
+        run: |
+          cd terraform
+          MASTER_IP=$(terraform output -raw master_ip)
+          WORKER_IP=$(terraform output -raw worker_ip)
+
+          echo "Master: $MASTER_IP"
+          echo "Worker: $WORKER_IP"
+
+          cd ../ansible
+
+          cat <<EOF > inventory
+          [master]
+          $MASTER_IP
+
+          [worker]
+          $WORKER_IP
+
+          [all:vars]
+          ansible_user=ubuntu
+          ansible_ssh_private_key_file=../terraform/my-key
+          ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+          EOF
+
+      # 🔥 Install Ansible
+      - name: Install Ansible
+        run: sudo apt-get update && sudo apt-get install -y ansible
+
+      # 🔥 Run only Ansible (NO Terraform apply)
+      - name: Run Ansible Playbooks
+        run: |
+          cd ansible
+          ansible-playbook -i inventory install-k8s.yml
+          ansible-playbook -i inventory master.yml
+          ansible-playbook -i inventory worker.yml

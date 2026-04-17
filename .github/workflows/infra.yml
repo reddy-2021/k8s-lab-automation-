@@ -15,7 +15,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
-      # 🔥 ADD THIS BLOCK (MUST)
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -23,7 +22,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: us-east-1
 
-      # 🔥 Debug (optional but recommended)
       - name: Verify AWS Identity
         run: aws sts get-caller-identity
 
@@ -36,8 +34,8 @@ jobs:
       - name: Terraform Output to Inventory
         run: |
           cd terraform
-		  MASTER_IP=$(terraform output -raw master_ip)
-		  WORKER_IP=$(terraform output -raw worker_ip)
+          MASTER_IP=$(terraform output -raw master_ip)
+          WORKER_IP=$(terraform output -raw worker_ip)
 
           cd ../ansible
 

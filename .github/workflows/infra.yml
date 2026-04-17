@@ -1,4 +1,4 @@
-name: Infra Setup
+name: Infra + K8s Setup
 
 on:
   push:
@@ -9,21 +9,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
-    - name: Terraform Init & Apply
-      run: |
-        cd terraform
-        terraform init
-        terraform apply -auto-approve
+      # 🔥 ADD THIS BLOCK (MUST)
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1
 
-    - name: Run Ansible
-      run: |
-        cd ansible
-        ansible-playbook -i inventory.ini install-k8s.yml
-        ansible-playbook -i inventory.ini master.yml
-        ansible-playbook -i inventory.ini worker.yml
+      # 🔥 Debug (optional but recommended)
+      - name: Verify AWS Identity
+        run: aws sts get-caller-identity
+
+      - name: Terraform Init & Apply
+        run: |
+          cd terraform
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Run Ansible
+        run: |
+          cd ansible
+          ansible-playbook -i inventory install-k8s.yml
+          ansible-playbook -i inventory master.yml
+          ansible-playbook -i inventory worker.yml

@@ -63,7 +63,7 @@ jobs:
       # 🔥 Run only Ansible (NO Terraform apply)
       - name: Run Ansible Playbooks
         run: |
-          cd ansible
+          cd ansiable
           ansible-playbook -i inventory install-k8s.yml
           ansible-playbook -i inventory master.yml
           ansible-playbook -i inventory worker.yml

@@ -3,16 +3,19 @@ name: Ansible Configuration Only
 on:
   workflow_dispatch:   # manual trigger
 
+permissions:
+  contents: read
+
 jobs:
   ansible:
     runs-on: ubuntu-latest
-    
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        
       - name: Setup Terraform
-       uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v3
 
       # 🔥 AWS credentials (needed for terraform output)
       - name: Configure AWS Credentials
@@ -32,8 +35,8 @@ jobs:
       - name: Generate Inventory from Existing Infra
         run: |
           cd terraform
-          MASTER_IP=$(terraform output -raw master_ip)
-          WORKER_IP=$(terraform output -raw worker_ip)
+          MASTER_IP=$(terraform output -raw master_ip) || { echo "Error: Could not get master_ip"; exit 1; }
+          WORKER_IP=$(terraform output -raw worker_ip) || { echo "Error: Could not get worker_ip"; exit 1; }
 
           echo "Master: $MASTER_IP"
           echo "Worker: $WORKER_IP"

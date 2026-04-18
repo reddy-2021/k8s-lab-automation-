@@ -36,7 +36,7 @@ jobs:
           MASTER_IP=$(terraform output -raw master_ip)
           WORKER_IP=$(terraform output -raw worker_ip)
 
-          cd ../ansible
+          cd ../ansiable
 
           cat <<EOF > inventory
           [master]

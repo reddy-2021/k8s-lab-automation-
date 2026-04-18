@@ -41,7 +41,7 @@ jobs:
           echo "Master: $MASTER_IP"
           echo "Worker: $WORKER_IP"
 
-          cd ../../ansiable
+          cd ../ansiable
 
           cat <<EOF > inventory
           [master]

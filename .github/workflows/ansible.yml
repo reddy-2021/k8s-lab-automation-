@@ -41,7 +41,7 @@ jobs:
           echo "Master: $MASTER_IP"
           echo "Worker: $WORKER_IP"
 
-          cd ../ansible
+          cd ../../ansiable
 
           cat <<EOF > inventory
           [master]

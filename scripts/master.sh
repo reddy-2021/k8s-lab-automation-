@@ -17,3 +17,7 @@ grep "kubeadm join" /tmp/kubeadm_init.log > /tmp/join.sh
 chmod +x /tmp/join.sh
 
 echo "✅ Master ready"
+
+wget https://get.helm.sh/helm-v3.14.0-linux-amd64.tar.gz
+tar -xvf helm-v3.14.0-linux-amd64.tar.gz
+sudo mv linux-amd64/helm /usr/local/bin/

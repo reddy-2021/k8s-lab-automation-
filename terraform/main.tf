@@ -60,7 +60,7 @@ resource "aws_security_group" "k8s_sg" {
 resource "aws_instance" "master" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
-  user_data = file("${path.module}/scripts/master.sh")
+  user_data = file("${path.module}/../scripts/master.sh")
   key_name                    = aws_key_pair.k8s_key.key_name
   associate_public_ip_address = true
 

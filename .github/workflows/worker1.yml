@@ -1,4 +1,4 @@
-name: Install Master
+name: Install Worker1
 
 on:
   workflow_dispatch:

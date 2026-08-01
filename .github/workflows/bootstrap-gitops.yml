@@ -25,7 +25,7 @@ jobs:
             -o StrictHostKeyChecking=no \
             -i ~/.ssh/id_rsa \
             gitops \
-            ${{ secrets.SSH_USER }}@${{ secrets.MASTER_PUBLIC_IP }}:/home/${{ secrets.SSH_USER }}/
+            ${{ secrets.SSH_USER }}@${{ secrets.MASTER_IP }}:/home/${{ secrets.SSH_USER }}/
 
       - name: Bootstrap GitOps
         run: |

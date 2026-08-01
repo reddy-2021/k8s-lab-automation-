@@ -5,18 +5,34 @@ on:
 
 jobs:
   install:
+
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.MASTER_IP }} >> ~/.ssh/known_hosts
 
-      - name: Execute worker0 Script
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Add Worker Host Key
         run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.WORKER0_IP }} 'bash -s' < scripts/worker0.sh
+          ssh-keyscan -H ${{ secrets.WORKER0_IP }} >> ~/.ssh/known_hosts
+
+      - name: Make Script Executable
+        run: |
+          chmod +x scripts/worker1.sh
+
+      - name: Execute Worker0 Script
+        run: |
+          ssh \
+            -i ~/.ssh/id_rsa \
+            -o StrictHostKeyChecking=yes \
+            ${{ secrets.SSH_USER }}@${{ secrets.WORKER0_IP }} \
+            'bash -s' < scripts/worker1.sh

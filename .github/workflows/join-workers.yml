@@ -1,0 +1,40 @@
+name: Join Kubernetes Worker Nodes
+
+on:
+  workflow_dispatch:
+
+jobs:
+  join-workers:
+
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_USER: ${{ secrets.SSH_USER }}
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Add Known Hosts
+        run: |
+          ssh-keyscan -H $(head -1 inventory/master) >> ~/.ssh/known_hosts
+
+          while read ip
+          do
+            ssh-keyscan -H $ip >> ~/.ssh/known_hosts
+          done < inventory/workers
+
+      - name: Make Script Executable
+        run: chmod +x scripts/join-workers.sh
+
+      - name: Join Worker Nodes
+        run: ./scripts/join-workers.sh

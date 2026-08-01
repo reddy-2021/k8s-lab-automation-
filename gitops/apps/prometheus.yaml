@@ -10,7 +10,7 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/YOUR_GITHUB_USERNAME/k8s-production-platform.git
+    repoURL: https://github.com/reddy-2021/k8s-lab-automation-.git
     targetRevision: main
     path: gitops/helm/prometheus
 

@@ -30,3 +30,7 @@ jobs:
           ssh -i ~/.ssh/id_rsa \
             ${{ secrets.SSH_USER }}@${{ secrets.WORKER1_IP }} \
             "sudo kubeadm reset -f && sudo $JOIN_CMD"
+
+          ssh -i ~/.ssh/id_rsa \
+            ${{ secrets.SSH_USER }}@${{ secrets.WORKER0_IP }} \
+            "sudo kubeadm reset -f && sudo $JOIN_CMD"

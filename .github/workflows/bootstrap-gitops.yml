@@ -1,0 +1,36 @@
+name: Bootstrap GitOps
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  bootstrap:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Copy GitOps Folder
+        run: |
+          scp -r \
+            -o StrictHostKeyChecking=no \
+            -i ~/.ssh/id_rsa \
+            gitops \
+            ${{ secrets.SSH_USER }}@${{ secrets.MASTER_PUBLIC_IP }}:/home/${{ secrets.SSH_USER }}/
+
+      - name: Bootstrap GitOps
+        run: |
+          ssh \
+            -o StrictHostKeyChecking=no \
+            -i ~/.ssh/id_rsa \
+            ${{ secrets.SSH_USER }}@${{ secrets.MASTER_PUBLIC_IP }} \
+            "cd /home/${{ secrets.SSH_USER }} && bash -s" < scripts/bootstrap-gitops.sh

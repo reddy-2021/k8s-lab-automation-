@@ -27,7 +27,7 @@ jobs:
 
       - name: Make Script Executable
         run: |
-          chmod +x scripts/worker1.sh
+          chmod +x scripts/worker0.sh
 
       - name: Execute Worker0 Script
         run: |

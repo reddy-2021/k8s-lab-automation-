@@ -35,4 +35,4 @@ jobs:
             -i ~/.ssh/id_rsa \
             -o StrictHostKeyChecking=yes \
             ${{ secrets.SSH_USER }}@${{ secrets.WORKER0_IP }} \
-            'bash -s' < scripts/worker1.sh
+            'bash -s' < scripts/worker0.sh

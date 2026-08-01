@@ -8,15 +8,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.MASTER_IP }} >> ~/.ssh/known_hosts
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
 
-      - name: Execute WORKER1 Script
-        run: |
-          ssh -i ~/.ssh/id_rsa ubuntu@${{ secrets.WORKER1_IP }} 'bash -s' < scripts/worker1.sh
+    - name: Add Worker Host Key
+      run: |
+        ssh-keyscan -H ${{ secrets.WORKER1_IP }} >> ~/.ssh/known_hosts
+
+    - name: Execute Worker Script
+      run: |
+        ssh -i ~/.ssh/id_rsa \
+          ubuntu@${{ secrets.WORKER1_IP }} \
+          'bash -s' < scripts/worker1.sh

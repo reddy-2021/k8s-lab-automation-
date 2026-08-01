@@ -5,36 +5,28 @@ on:
 
 jobs:
   join-workers:
-
     runs-on: ubuntu-latest
 
-    env:
-      SSH_USER: ${{ secrets.SSH_USER }}
-
     steps:
+      - uses: actions/checkout@v4
 
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Configure SSH
+      - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-
           chmod 600 ~/.ssh/id_rsa
 
       - name: Add Known Hosts
         run: |
-          ssh-keyscan -H $(head -1 inventory/master) >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.MASTER_IP }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.WORKER1_IP }} >> ~/.ssh/known_hosts
 
-          while read ip
-          do
-            ssh-keyscan -H $ip >> ~/.ssh/known_hosts
-          done < inventory/workers
+      - name: Join Worker
+        run: |
+          JOIN_CMD=$(ssh -i ~/.ssh/id_rsa \
+            ${{ secrets.SSH_USER }}@${{ secrets.MASTER_IP }} \
+            "sudo kubeadm token create --print-join-command")
 
-      - name: Make Script Executable
-        run: chmod +x scripts/join-workers.sh
-
-      - name: Join Worker Nodes
-        run: ./scripts/join-workers.sh
+          ssh -i ~/.ssh/id_rsa \
+            ${{ secrets.SSH_USER }}@${{ secrets.WORKER1_IP }} \
+            "sudo kubeadm reset -f && sudo $JOIN_CMD"

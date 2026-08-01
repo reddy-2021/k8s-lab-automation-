@@ -32,5 +32,5 @@ jobs:
           ssh \
             -o StrictHostKeyChecking=no \
             -i ~/.ssh/id_rsa \
-            ${{ secrets.SSH_USER }}@${{ secrets.MASTER_PUBLIC_IP }} \
+            ${{ secrets.SSH_USER }}@${{ secrets.MASTER_IP }} \
             "cd /home/${{ secrets.SSH_USER }} && bash -s" < scripts/bootstrap-gitops.sh

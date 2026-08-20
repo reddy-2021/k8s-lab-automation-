@@ -1,0 +1,195 @@
+Different Argo CD users should have different permissions.
+For example, Jai can add clusters, while Ali can manage applications only inside the kia-project project.
+1. The RBAC policy format
+
+The slide shows two policy formats:
+
+For applications, logs, and exec:
+
+p, <role/user/group>, <resource>, <action>, <project>/<object>
+
+For other resources:
+
+p, <role/user/group>, <resource>, <action>, <object>
+
+Think of it as:
+
+WHO        WHAT             DO WHAT        WHERE
+role       resource         action         object
+
+Example:
+
+p, role:kia-admins, applications, *, kia-project/*
+
+means:
+
+The kia-admins role can perform any action (*) on applications inside kia-project.
+
+2. Jai — Cluster administrator
+
+The first policy is:
+
+p, role:create-cluster, clusters, create, *
+
+This gives the role:
+
+role:create-cluster
+
+permission to:
+
+resource = clusters
+action   = create
+object   = *
+
+So Jai can create/register clusters.
+
+That's why:
+
+argocd account can-i create clusters '*'
+
+returns:
+
+yes
+
+But:
+
+argocd account can-i delete clusters '*'
+
+returns:
+
+no
+Important!
+
+Jai has:
+
+CREATE cluster       ✅
+DELETE cluster       ❌
+
+So this is least-privilege RBAC rather than giving Jai full admin access.
+
+3. Ali — Project administrator
+
+The second policy is:
+
+p, role:kia-admins, applications, *, kia-project/*
+
+This means:
+
+Role:       kia-admins
+Resource:   applications
+Action:     *
+Project:    kia-project
+Object:     *
+
+So Ali can perform all application actions within the kia-project.
+
+For example:
+
+Sync application       ✅
+Delete application     ✅
+Create application     ✅
+Update application     ✅
+
+But importantly, this permission is scoped to:
+
+kia-project/*
+
+It does not automatically give Ali permission over applications in every Argo CD project.
+
+4. KIA team
+
+The KIA team inherits the permissions associated with:
+
+role:kia-admins
+
+So the structure is roughly:
+
+             Argo CD
+                │
+          ┌─────┴─────┐
+          │   RBAC    │
+          └─────┬─────┘
+                │
+       ┌────────┴────────┐
+       │                 │
+      Jai               Ali
+       │                 │
+       ▼                 ▼
+create clusters     kia-project apps
+       │                 │
+       ▼                 ▼
+    Cluster          Applications
+5. The final command
+
+Ali runs:
+
+argocd account can-i sync applications kia-project/*
+
+and gets:
+
+yes
+
+That means:
+
+Ali is authorized to sync applications belonging to kia-project.
+
+🔥 Very important interview concept
+
+Don't confuse Kubernetes RBAC with Argo CD RBAC.
+
+Kubernetes RBAC
+
+Controls access to Kubernetes resources:
+
+User
+  ↓
+Role / ClusterRole
+  ↓
+Pods
+Deployments
+Services
+Secrets
+...
+Argo CD RBAC
+
+Controls what a user can do inside Argo CD:
+
+User
+  ↓
+Argo CD Role
+  ↓
+Applications
+Projects
+Clusters
+Repositories
+Logs
+Exec
+...
+
+So you can have:
+
+Jai → Can create clusters in Argo CD
+Ali → Can manage applications in kia-project
+Kia team → Can sync applications in kia-project
+
+without making everyone an Argo CD administrator.
+
+Easy way to remember
+Argo CD RBAC = "What can this person do in Argo CD?"
+
+
+Kubernetes RBAC = "What can this person do inside Kubernetes?"
+
+And the policy:
+p, role, resource, action, object
+
+What:
+RBAC = Role-Based Access Control. It controls what users/groups can do inside Argo CD.
+
+Policy format:
+
+p, <role/user/group>, <resource>, <action>, <object>
+
+Example:
+
+p, role:kia-admins, applications, *, kia-project/*

@@ -59,6 +59,14 @@ with full cluster level admin privileges.
 
 You enter:
 y
+controlplane ~ ➜  argocd cluster add cluster2
+WARNING: This will create a service account `argocd-manager` on the cluster referenced by context `cluster2` with full cluster level privileges. Do you want to continue [y/N]? Y
+INFO[0003] ServiceAccount "argocd-manager" created in namespace "kube-system" 
+INFO[0003] ClusterRole "argocd-manager-role" created    
+INFO[0003] ClusterRoleBinding "argocd-manager-role-binding" created 
+INFO[0003] Created bearer token secret for ServiceAccount "argocd-manager" 
+Cluster 'https://cluster2-controlplane:6443' added
+
 if you want to continue.
 What happens after this?
 Once the PROD cluster is registered:

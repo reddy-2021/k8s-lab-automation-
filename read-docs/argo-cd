@@ -1,0 +1,96 @@
+ ------------Argo CD multi-cluster deployment-------------
+
+The architecture is:
+
+                    GitHub
+                       │
+                  Pull manifests
+                       │
+                       ▼
+                 ┌──────────┐
+                 │ Argo CD   │
+                 └────┬─────┘
+                      │
+              Deploy application
+                ┌─────┴─────┐
+                ▼           ▼
+          DEV Cluster   PROD Cluster
+
+1. Add PROD cluster to kubeconfig
+
+kubectl config set-cluster prod --server=https://1.2.3.4   --certificate-authority=prod.crt
+This tells your local kubectl:
+"There is a Kubernetes cluster called prod, and its API server is at this address."
+
+2. Add credentials
+kubectl config set-credentials admin --client-certificate=admin.crt  --client-key=admin.key
+This creates an authentication entry called: admin
+using:
+admin.crt
+admin.key
+
+3. Create a context
+kubectl config set-context admin-prod --cluster=prod --user=admin --namespace=prod-app
+Now we have:
+Context: admin-prod
+   │
+   ├── Cluster → prod
+   ├── User    → admin
+   └── Namespace → prod-app
+So:
+#kubectl --context admin-prod get pods
+means:
+Connect to the PROD cluster using the admin credentials and look in prod-app.
+
+
+4. Give the cluster to Argo CD
+This is the key command:
+#argocd cluster add admin-prod
+Argo CD looks at your kubeconfig context:
+admin-prod
+and registers that Kubernetes cluster with Argo CD.
+During this process, Argo CD creates a service account such as:
+argocd-manager
+inside the target cluster.
+The warning in your screenshot says:
+This will create a service account `argocd-manager`
+on the cluster referenced by context `admin-prod`
+with full cluster level admin privileges.
+
+You enter:
+y
+if you want to continue.
+What happens after this?
+Once the PROD cluster is registered:
+
+                 GitHub
+                    │
+                    │ manifests
+                    ▼
+                Argo CD
+                 /    \
+                /      \
+               ▼        ▼
+          DEV Cluster  PROD Cluster
+
+Argo CD can deploy applications to either cluster.
+For example:
+
+spec:
+  destination:
+    server: https://prod-api-server
+    namespace: prod-app
+Argo CD will deploy that application to the PROD cluster.
+
+For DEV:
+spec:
+  destination:
+    server: https://dev-api-server
+    namespace: dev-app
+
+🔥 Interview answer
+If interviewer asks:
+"How do you configure Argo CD to deploy applications to multiple Kubernetes clusters?"
+You can say:
+"First, I add each Kubernetes cluster to my kubeconfig and create separate contexts. Then I use argocd cluster add <context> to register each cluster with Argo CD. Argo CD creates the required service account and permissions on the target cluster. After registration, I can create Argo CD Applications or ApplicationSets with different destination clusters and namespaces, allowing one Argo CD instance to deploy applications across multiple Kubernetes clusters."
+One important production point: the screenshot uses a service account with full cluster-admin privileges. In a real production environment, I would follow least privilege/RBAC rather than granting unnecessary cluster-wide admin access
